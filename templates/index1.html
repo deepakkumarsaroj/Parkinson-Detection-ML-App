@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Parkinson's Detection</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #4ba1db;
+      margin: 0;
+      padding: 40px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #c2c5c7;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+
+    h3 {
+      color: #34495e;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+      margin-top: 30px;
+    }
+
+    label {
+      font-weight: 500;
+      color: #333;
+      display: block;
+      margin-top: 12px;
+    }
+
+    input[type="number"],
+    input[type="file"],
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      background-color: #2980b9;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      flex: 1;
+      transition: all 0.3s ease;
+      min-width: 140px;
+    }
+
+    .btn:hover {
+      background-color: #1c5980;
+      transform: scale(1.03);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn.secondary {
+      background-color: #95a5a6;
+    }
+
+    .btn.secondary:hover {
+      background-color: #7f8c8d;
+    }
+    body {
+       background: linear-gradient(145deg,violet,indigo,blue,green,yellow,orange,red);
+    }
+    
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Integrated System for Detection and Staging of Parkinson's Disease</h1>
+    <form id="predictionForm" action="/predict" method="post" enctype="multipart/form-data">
+
+      <!-- Patient Profile Selection -->
+      <label for="profileSelect"><strong>Select Patient Profile:</strong></label>
+      <select id="profileSelect" onchange="loadProfile(this.value)">
+        <option value="">-- Choose a patient --</option>
+        <option value="0">Patient 1</option>
+        <option value="1">Patient 2</option>
+        <option value="2">Patient 3</option>
+        <option value="3">Patient 4</option>
+        <option value="4">Patient 5</option>
+      </select>
+
+     
+
+      <!-- SVM Features -->
+      <h3>Hand Movement Dataset</h3>
+      {% for feature in ['RMS', 'MAX_BETWEEN_ET_HT', 'MIN_BETWEEN_ET_HT', 'STD_DEVIATION_ET_HT', 'MRT', 'MAX_HT', 'MIN_HT', 'STD_HT', 'CHANGES_FROM_NEGATIVE_TO_POSITIVE_BETWEEN_ET_HT'] %}
+        <label for="{{ feature }}">{{ feature }}:</label>
+        <input type="number" step="any" name="{{ feature }}" class="auto-fill" required>
+      {% endfor %}
+
+      <!-- DCT Features -->
+      <h3>Speech Pattern Dataset</h3>
+      {% for feature in ['MDVP:Fo(Hz)', 'MDVP:Fhi(Hz)', 'MDVP:Flo(Hz)', 'MDVP:Jitter(%)', 'MDVP:Jitter(Abs)', 'MDVP:RAP', 'MDVP:PPQ', 'Jitter:DDP', 'MDVP:Shimmer', 'MDVP:Shimmer(dB)', 'Shimmer:APQ3', 'Shimmer:APQ5', 'MDVP:APQ', 'Shimmer:DDA', 'NHR', 'HNR', 'RPDE', 'DFA', 'spread1', 'spread2', 'D2', 'PPE'] %}
+        <label for="{{ feature }}">{{ feature }}:</label>
+        <input type="number" step="any" name="{{ feature }}" class="auto-fill" required>
+      {% endfor %}
+
+      <!-- KNN Image -->
+      <h3>Brain MRI Dataset</h3>
+      <input type="file" name="image" accept="image/*" required>
+
+      <!-- Buttons -->
+      <div class="button-group">
+        <button type="button" class="btn secondary" onclick="autoFill()">Auto Fill</button>
+        <input type="submit" class="btn" value="Predict">
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const patients = [
+      {
+        // Patient 1
+        //parkinson yes
+        "RMS":6427.297166, "MAX_BETWEEN_ET_HT":6025.491383, "MIN_BETWEEN_ET_HT":33006.4185, "STD_DEVIATION_ET_HT":0.012076, "MRT":25.388078, "MAX_HT":178.031966,"MIN_HT":0.002205, "STD_HT":1926.780124, "CHANGES_FROM_NEGATIVE_TO_POSITIVE_BETWEEN_ET_HT":0.168421,
+        "MDVP:Fo(Hz)": 119.992, "MDVP:Fhi(Hz)": 157.302, "MDVP:Flo(Hz)": 74.997, "MDVP:Jitter(%)": 0.00784, "MDVP:Jitter(Abs)": 0.00007, "MDVP:RAP": 0.0037, "MDVP:PPQ": 0.00554, "Jitter:DDP": 0.01109,
+        "MDVP:Shimmer": 0.04374, "MDVP:Shimmer(dB)": 0.426, "Shimmer:APQ3": 0.02182, "Shimmer:APQ5": 0.0313, "MDVP:APQ": 0.02971, "Shimmer:DDA": 0.06545,
+        "NHR": 0.02211, "HNR": 21.033, "RPDE": 0.41478, "DFA": 0.81529, "spread1": -4.813, "spread2": 0.2648, "D2": 2.30144, "PPE": 0.28465
+      },
+      {
+        // Patient 2
+        'RMS':4069.024,'MAX_BETWEEN_ET_HT':6280.372,'MIN_BETWEEN_ET_HT':36073.59,'STD_DEVIATION_ET_HT':0.027402,'MRT':30.47033,'MAX_HT':174.726,'MIN_HT':0.057988,'STD_HT':1591.858,'CHANGES_FROM_NEGATIVE_TO_POSITIVE_BETWEEN_ET_HT':.225,
+        'MDVP:Fo(Hz)':4.01850086935738,'MDVP:Fhi(Hz)':0.689564897747452,'MDVP:Flo(Hz)':2.36774760952556,'MDVP:Jitter(%)':0.166057753348112,'MDVP:Jitter(Abs)':2.38318293511441,'MDVP:RAP':2.65605291201321,'MDVP:PPQ':2.25124999939665,'Jitter:DDP':0.373362229352369,
+        'MDVP:Shimmer':4.2037012818797,'MDVP:Shimmer(dB)':2.48687720471222,'Shimmer:APQ3': 0.01645,'Shimmer:APQ5': 0.01904,'MDVP:APQ': 0.02199,'Shimmer:DDA': 0.04936,
+        'NHR': 0.01641,'HNR': 20.4092,'RPDE': 0.4239,'DFA': 0.6988,'spread1': -6.5797,'spread2': 0.1528,'D2': 2.061,'PPE': 0.2845
+      },
+      {
+        // Patient 3
+        'RMS': 3731.492,'MAX_BETWEEN_ET_HT': 6216.62,'MIN_BETWEEN_ET_HT': 38598.49,'STD_DEVIATION_ET_HT': 0.000638,'MRT': 23.935009,'MAX_HT': 176.996147,'MIN_HT': 0,'STD_HT': 1763.1621,'CHANGES_FROM_NEGATIVE_TO_POSITIVE_BETWEEN_ET_HT': 0.211039,
+        'MDVP:Fo(Hz)': -6.54393,'MDVP:Fhi(Hz)': -4.84693,'MDVP:Flo(Hz)': -9.38078,'MDVP:Jitter(%)': 0.069068,'MDVP:Jitter(Abs)': -3.0305753,'MDVP:RAP': 1.750387018,'MDVP:PPQ': 1.885190162,'Jitter:DDP': -1.4006847,
+        'MDVP:Shimmer': -0.334111069,'MDVP:Shimmer(dB)': -2.443499818,'Shimmer:APQ3': 9.524200275,'Shimmer:APQ5': 5.214673897,'MDVP:APQ': 2.539498976,'Shimmer:DDA': 3.192633585,
+        'NHR': -0.119864971,'HNR': 1.451159126,'RPDE': 1.980220083,'DFA': 0.411677497,'spread1': -1.361088287,'spread2': -0.327797028,'D2': -3.733665216,'PPE': -12.49392062
+      },
+      {
+        // Patient 4
+        // parkinson YES
+        "RMS": 5156.547, "MAX_BETWEEN_ET_HT": 7618.954, "MIN_BETWEEN_ET_HT": 33945.66, "STD_DEVIATION_ET_HT": 0.011237, "MRT": 25.07437, "MAX_HT": 169.4485, "MIN_HT": 0.006654, "STD_HT": 1710.565, "CHANGES_FROM_NEGATIVE_TO_POSITIVE_BETWEEN_ET_HT": 0.218954,
+        "MDVP:Fo(Hz)": 155, "MDVP:Fhi(Hz)": 198, "MDVP:Flo(Hz)": 115, "MDVP:Jitter(%)": 0.035, "MDVP:Jitter(Abs)": 0.0028, "MDVP:RAP": 0.014, "MDVP:PPQ": 0.021, "Jitter:DDP": 0.037,
+        "MDVP:Shimmer": 0.043, "MDVP:Shimmer(dB)": 0.23, "Shimmer:APQ3": 0.013, "Shimmer:APQ5": 0.018, "MDVP:APQ": 0.023, "Shimmer:DDA": 0.033,
+        "NHR": 0.027, "HNR": 23, "RPDE": 0.51, "DFA": 0.61, "spread1": -5.3, "spread2": 0.27, "D2": 2.6, "PPE": 0.12
+      },
+      {
+        // Patient 5
+        //Parkinson YES
+        "RMS":8825.424075, "MAX_BETWEEN_ET_HT":6329.79843, "MIN_BETWEEN_ET_HT":33618.89605, "STD_DEVIATION_ET_HT":0.073233, "MRT":53.249865, "MAX_HT":184.673384, "MIN_HT":0.028545, "STD_HT":3704.418619, "CHANGES_FROM_NEGATIVE_TO_POSITIVE_BETWEEN_ET_HT": 0.262687,
+        "MDVP:Fo(Hz)": 148, "MDVP:Fhi(Hz)": 205, "MDVP:Flo(Hz)": 108, "MDVP:Jitter(%)": 0.033, "MDVP:Jitter(Abs)": 0.0026, "MDVP:RAP": 0.0125, "MDVP:PPQ": 0.019, "Jitter:DDP": 0.034,
+        "MDVP:Shimmer": 0.044, "MDVP:Shimmer(dB)": 0.21, "Shimmer:APQ3": 0.014, "Shimmer:APQ5": 0.019, "MDVP:APQ": 0.024, "Shimmer:DDA": 0.034,
+        "NHR": 0.026, "HNR": 27, "RPDE": 0.5, "DFA": 0.62, "spread1": -5.1, "spread2": 0.26, "D2": 2.2, "PPE": 0.115
+      }
+    ];
+
+    function loadProfile(index) {
+      if (index === "") return;
+      const profile = patients[parseInt(index)];
+      const inputs = document.querySelectorAll('.auto-fill');
+      inputs.forEach(input => {
+        if (profile[input.name] !== undefined) {
+          input.value = profile[input.name];
+        }
+      });
+    }
+
+    function getRandomFloat(min, max, decimals = 3) {
+      const str = (Math.random() * (max - min) + min).toFixed(decimals);
+      return parseFloat(str);
+    }
+
+    function autoFill() {
+      const inputs = document.querySelectorAll('.auto-fill');
+      inputs.forEach(input => {
+        let val;
+        if (input.name.includes("Jitter") || input.name.includes("Shimmer") || input.name.includes("PPE") || input.name.includes("NHR")) {
+          val = getRandomFloat(0.01, 0.2);
+        } else if (input.name.includes("Fo") || input.name.includes("Fhi") || input.name.includes("Flo")) {
+          val = getRandomFloat(100, 300);
+        } else if (input.name.includes("HNR")) {
+          val = getRandomFloat(10, 40);
+        } else {
+          val = getRandomFloat(0, 1);
+        }
+        input.value = val;
+      });
+    }
+  </script>
+</body>
+</html>

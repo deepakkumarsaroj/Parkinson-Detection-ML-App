@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Final Prediction</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #f8f9fa, #e9ecef);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      text-align: center;
+      background: #ffffff;
+      padding: 40px 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      color: #343a40;
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+
+    .result {
+      font-size: 1.5em;
+      color: #007bff;
+      margin-bottom: 20px;
+    }
+
+    .label {
+      font-size: 1.3em;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #495057;
+    }
+
+    .result-img {
+      max-width: 350px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    body {
+       background: linear-gradient(145deg,violet,indigo,blue,green,yellow,orange,red);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Stage Result:</h2>
+    <p class="result">Parkinson's Disease Stage: <span id="prediction-value">{{ total_sum }}</span></p>
+    <div class="label" id="label"></div>
+    <img id="result-image" class="result-img" src="" alt="Result Image">
+  </div>
+
+  <script>
+    const result = parseInt("{{ result }}");
+
+    const dataMap = {
+      1: {
+        label: "Early Parkinson's Stage-1",
+        image: "/static/Stage 1.jpg"
+      },
+      2: {
+        label: "Mild Parkinson's Stage-2",
+        image: "/static/Stage 2.jpg"
+      },
+      3: {
+        label: "Moderate Parkinson's Stage-3",
+        image: "/static/Stage 3.jpg"
+      },
+      4: {
+        label: "Severe Parkinson's Stage-4",
+        image: "/static/Stage 4.jpg"
+      },
+      5: {
+        label: "Advanced Parkinson's Stage-5",
+        image: "/static/Stage 5.jpg"
+      }
+    };
+
+    const fallback = {
+      label: "Unknown Stage",
+      image: "/static/default.jpg"  // Optional: add a default image
+    };
+
+    const selected = dataMap[result] || fallback;
+
+    document.getElementById("label").textContent = selected.label;
+    document.getElementById("result-image").src = selected.image;
+  </script>
+</body>
+</html>
