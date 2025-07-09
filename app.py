@@ -8,8 +8,8 @@ import os
 import gdown
 
 #Model Link from google drive
-MODEL_FILE = "parkinson_knn_model.pkl"
 FILE_ID = "1--rgHv5E4qMLeK_0kCODr2jhlCHeDo9b"
+MODEL_FILE = "parkinson_knn_model.pkl"
 GDRIVE_URL = f"https://drive.google.com/uc?id={FILE_ID}"
 
 # Download model file from Google Drive if not already present
